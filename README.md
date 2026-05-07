@@ -7,7 +7,6 @@ This repository studies toxicity propagation and memory-mediated behavior in mul
 ## Repository Layout
 
 - `src/`: simulation and evaluation entrypoints
-- `data/`: extracted seeds/chains and experiment outputs
 - `analysis/`: postprocessing and plotting scripts
 - `experiments/`: higher-level runners (dose-response, sanitization, DPO)
 - `scripts/`: utility workflows (including smoking-gun pipeline)
@@ -22,28 +21,17 @@ pip install pandas networkx torch detoxify tqdm matplotlib numpy scipy jupyter
 
 ## Core Workflow
 
-### 1) Build extraction data
-
-```bash
-python data/build_reddit.py
-python data/build_threads.py
-```
-
-Expected key files:
-- `data/extracted/politics_depth_ge5.jsonl`
-- `data/extracted/politics_seedA_BCD_chains_detoxify.jsonl`
-
-### 2) Run baseline chain simulation
+### 1) Run baseline chain simulation
 
 ```bash
 cd src
 python -m run_influence_baseline \
   --seed_source reddit_jsonl \
-  --reddit_jsonl agent/data/reddit/extracted/politics_seedA_BCD_chains_detoxify.jsonl \
+  --reddit_jsonl ./data/src/politics_seedA_BCD_chains_detoxify.jsonl \
   --seed_strategy root \
   --reddit_require_max_depth -1 \
-  --out_jsonl ../data/reddit/influence_baseline_threads_reddit_rollouts.jsonl \
-  --out_summary ../data/reddit/influence_baseline_summary_reddit_rollouts.json \
+  --out_jsonl ./data/reddit/influence_baseline_threads_reddit_rollouts.jsonl \
+  --out_summary ./data/reddit/influence_baseline_summary_reddit_rollouts.json \
   --model gpt-4o-mini \
   --toxic_intensity strong \
   --n_seeds 200 \
@@ -61,13 +49,13 @@ Common flags:
 - `--write_gate {none,redact,rewrite}`
 - `--sanitize_threshold 0.5`
 
-### 3) Evaluate / summarize
+### 2) Evaluate / summarize
 
 ```bash
 python -m evaluate_single_thread_influence \
-  --mild_path ../data/reddit/influence_baseline_threads_detoxify_mild.jsonl \
-  --medium_path ../data/reddit/influence_baseline_threads_detoxify_medium.jsonl \
-  --strong_path ../data/reddit/influence_baseline_threads_detoxify_strong.jsonl \
+  --mild_path ./data/reddit/influence_baseline_threads_detoxify_mild.jsonl \
+  --medium_path ./data/reddit/influence_baseline_threads_detoxify_medium.jsonl \
+  --strong_path ./data/reddit/influence_baseline_threads_detoxify_strong.jsonl \
   --analysis_dir ../analysis
 ```
 
@@ -111,7 +99,7 @@ Dose-response:
 ```bash
 python experiments/run_dose_response.py \
   --seed_source reddit_jsonl \
-  --reddit_jsonl agent/data/reddit/extracted/politics_seedA_BCD_chains_detoxify.jsonl \
+  --reddit_jsonl ./data/src/politics_seedA_BCD_chains_detoxify.jsonl \
   --model gpt-4o-mini \
   --toxic_intensity strong \
   --n_seeds 200 \
@@ -124,7 +112,7 @@ Sanitization ablation:
 ```bash
 python experiments/run_sanitization_ablation.py \
   --seed_source reddit_jsonl \
-  --reddit_jsonl agent/data/reddit/extracted/politics_seedA_BCD_chains_detoxify.jsonl \
+  --reddit_jsonl ./data/src/politics_seedA_BCD_chains_detoxify.jsonl \
   --model gpt-4o-mini \
   --toxic_intensity strong \
   --n_seeds 200 \
